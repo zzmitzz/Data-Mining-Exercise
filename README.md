@@ -17,3 +17,32 @@ flowchart TD
 
 
 ```
+## FP Growth 
+```mermaid
+flowchart TD
+    A[Start mining with an item] --> B{Item in header table?}
+    B -->|Yes| C[Create new pattern by adding item to prefix]
+    C --> D[Calculate support for this pattern]
+    D --> E[Store pattern in frequent_patterns]
+    E --> F[Construct conditional pattern base]
+    F --> G[Extract prefix paths from all nodes with this item]
+    G --> H[Build conditional FP-tree]
+    H --> I{Conditional tree empty?}
+    I -->|No| J[Recursively mine conditional FP-tree]
+    I -->|Yes| K[Continue with next item]
+    J --> K
+    B -->|No| L[End mining]
+    K --> L
+    
+    subgraph "Conditional Pattern Base Construction"
+    G1[For each node with current item] --> G2[Find path from parent to root]
+    G2 --> G3[Create conditional transaction with path items]
+    G3 --> G4[Set count equal to node count]
+    end
+    
+    subgraph "Conditional FP-Tree Creation"
+    H1[Count frequency of each item in pattern base] --> H2[Filter items below min_support]
+    H2 --> H3[Create new FP-tree]
+    H3 --> H4[Insert filtered and sorted paths]
+    end
+```
