@@ -1,0 +1,12 @@
+ml-latest.zip
+ml-latest/cropped.csv
+ml-latest/genome-scores.csv
+ml-latest/genome-tags.csv
+ml-latest/links.csv
+ml-latest/movies.csv
+ml-latest/ratings.csv
+ml-latest/README.txt
+ml-latest/tags.csv
+utils/__pycache__/algo_apiori.cpython-313.pyc
+utils/__pycache__/algo_fpgrowth.cpython-313.pyc
+utils/__pycache__/utils.cpython-313.pyc
