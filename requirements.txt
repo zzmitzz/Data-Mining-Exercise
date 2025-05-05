@@ -3,3 +3,5 @@ numpy
 kaggle
 pandas
 tqdm
+fastapi
+uvicorn
