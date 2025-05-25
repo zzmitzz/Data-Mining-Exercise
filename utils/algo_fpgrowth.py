@@ -21,7 +21,6 @@ class Node:
         for child in self.children.values():
             child.display(indent + 1)
 
-
 class FPTree:
     """FP Tree for the FP-Growth algorithm."""
     def __init__(self):
@@ -219,7 +218,6 @@ def fp_growth(transactions, min_support_percentage):
     # Calculate minimum support count
     num_transactions = len(transactions)
     min_support = int(min_support_percentage * num_transactions)
-    
     # Create FP-tree
     fp_tree = FPTree()
     fp_tree.create_fptree_from_transactions(transactions, min_support)
@@ -227,9 +225,9 @@ def fp_growth(transactions, min_support_percentage):
     # Mine the FP-tree to find frequent patterns
     frequent_patterns = {}
     fp_tree._mine_tree(fp_tree.header_table, [], frequent_patterns, min_support)
-    
     # Convert frozenset keys to tuple for better readability
-    result = {tuple(sorted(pattern)): support 
+    result = {tuple(sorted(pattern)): (support/num_transactions) 
              for pattern, support in frequent_patterns.items()}
     
     return result
+

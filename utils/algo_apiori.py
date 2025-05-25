@@ -24,7 +24,7 @@ def genNextKItemset(prevFreqItemSet, k):
             union = set(item1).union(set(item2))
             if len(union) == k:
                 candidate = tuple(sorted(union))
-                nextItemSet.add(candidate)
+                nextItemSet.add(candidate)  
     
     return nextItemSet
 
@@ -136,7 +136,7 @@ def generateAssociationRules(frequentItemSets, support_dict, minConfidence):
     return rules
 
 def findApriori(
-        dataPath="ml-latest/cropped.csv", 
+        dataPath="movies_dataset/cropped.csv", 
         minSupport = 0.2, 
         minConfidence = 0.5,
         minRatingFilter = 3.5):
@@ -156,7 +156,7 @@ def findApriori(
     return freqItemSets
 
 def findApiroriWithRules(
-        dataPath="ml-latest/cropped.csv", 
+        dataPath="movies_dataset/cropped.csv", 
         minSupport = 0.2, 
         minConfidence = 0.5,
         minRatingFilter = 3.5):
@@ -179,4 +179,5 @@ def findApiroriWithRules(
         minConfidence=minConfidence
     )
     
-    return freqItemSets, rules
+    return freqItemSets, rules, support_dict
+

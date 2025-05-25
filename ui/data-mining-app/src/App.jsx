@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import _ from 'lodash';
 import './App.css';
+import UserRatings from './UserRatings';
 
-function App() {
+function MainApp() {
+  const navigate = useNavigate();
   // State management
   const [algorithm, setAlgorithm] = useState('apriori');
   const [dataset, setDataset] = useState([
@@ -40,21 +43,17 @@ function App() {
   const runAlgorithm = async () => {
     setIsProcessing(true);
     setError("");
-    
     try {
       if(datasetType === 'custom') {
-        
-      }
-      else if (datasetType === 'movielens') {
-        const response = await fetch('http://localhost:8000/apriori/default', {
+        const response = await fetch('http://localhost:8000/apriori/custom', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            frequentItemsets: frequentItemsets,
-            rules: rules,
-            dataset: dataset,
+            data: dataset,
+            min_support: minSupport,
+            min_confidence: minConfidence
           })
         });
 
@@ -63,7 +62,40 @@ function App() {
         }
 
         const data = await response.json();
-        setFrequentItemsets(data.frequent_itemsets || []);
+        const mapped = Object.entries(data.frequent_itemsets).map(([size, itemsets]) => {
+          return {
+            size: parseInt(size),
+            itemsets: itemsets.map(item => ({
+              items: item.items,
+              support: item.support
+            }))
+          };
+        });
+        setFrequentItemsets(mapped);
+        setRules(data.rules || []);
+      }
+      else if (datasetType === 'movielens') {
+        const response = await fetch(`http://localhost:8000/${algorithm}/default?min_support=${minSupport}&min_confidence=${minConfidence}`, {
+          method: 'GET',
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log(data)
+        const mapped = Object.entries(data.frequent_itemsets).map(([size, itemsets]) => {
+          return {
+            size: parseInt(size),
+            itemsets: itemsets.map(item => ({
+              items: item.items,
+              support: item.support
+            }))
+          };
+        });
+        console.log(mapped)
+        setFrequentItemsets(mapped);
         setRules(data.rules || []);
       }
     } catch (e) {
@@ -83,6 +115,12 @@ function App() {
       <header className="app-header">
         <h1 className="header-title">Datamining Frequence Itemset generation</h1>
         <p className="header-subtitle">PTIT</p>
+        <button 
+          onClick={() => navigate('/user-ratings')}
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
+          View User Ratings
+        </button>
       </header>
 
       <main className="main-content">
@@ -223,17 +261,13 @@ function App() {
                 <table className="data-table">
                   <thead>
                     <tr>
-                      <th className="table-header">Itemset</th>
-                      <th className="table-header">Support</th>
-                      <th className="table-header">Count</th>
+                      <th className="table-header">[Itemset]; Support</th>
                     </tr>
                   </thead>
                   <tbody>
                     {frequentItemsets.map((itemset, idx) => (
                       <tr key={idx} className="border-t border-gray-200">
-                        <td className="table-cell">{itemset.items.join(', ')}</td>
-                        <td className="table-cell">{itemset.support.toFixed(2)}</td>
-                        <td className="table-cell">{itemset.count}</td>
+                        <td className="table-cell">{itemset.itemsets.map(item => `[${item.items.join(', ')}]; ${item.support.toFixed(2)}`).join(', ')}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -254,7 +288,6 @@ function App() {
                     <tr>
                       <th className="table-header">Rule</th>
                       <th className="table-header">Confidence</th>
-                      <th className="table-header">Lift</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -264,7 +297,6 @@ function App() {
                           {rule.antecedent.join(', ')} → {rule.consequent.join(', ')}
                         </td>
                         <td className="table-cell">{rule.confidence.toFixed(2)}</td>
-                        <td className="table-cell">{rule.lift ? rule.lift.toFixed(2) : 'N/A'}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -314,6 +346,17 @@ function App() {
         Data warehouse & Data Mining
       </footer>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<MainApp />} />
+        <Route path="/user-ratings" element={<UserRatings />} />
+      </Routes>
+    </Router>
   );
 }
 

@@ -1,4 +1,3 @@
-
 import os
 import sys
 import utils
@@ -17,16 +16,12 @@ class Worker:
         self.minConfidence = minConfidence
 
     def runApioriAlgorithmWithRules(self):
-        freqItemSet , rules =  utils.algo_apiori.findApiroriWithRules(
+        freqItemSet , rules, support_dict =  utils.algo_apiori.findApiroriWithRules(
             dataPath=self.dataPath,
             minSupport=self.minSupport,
             minConfidence=self.minConfidence,
             minRatingFilter=3.5)
-        for k, itemsets in freqItemSet.items():
-            print(f"List of {k}-itemsets: {itemsets}")
-        for rule in rules:
-            print(f"{rule['antecedent']} -> {rule['consequent']} ; Support: ({rule['support']:.2f}) ; Confidence: ({rule['confidence']:.2f})")
-        return freqItemSet, rules
+        return freqItemSet, rules, support_dict
     
     def runApioriAlgorithm(self):
         freqItemSet =  utils.algo_apiori.findApriori(
@@ -37,16 +32,23 @@ class Worker:
         for k, itemsets in freqItemSet.items():
             print(f"List of {k}-itemsets: {itemsets}")
         return freqItemSet
-    
-    def runFPGrowthAlgorithm(self, min_support_percentage = 0.1):
+
+    def runFPGrowthAlgorithm(self):
         _, transactions = utils.utils.getItemSetAndTransactionList(
             dataPath=self.dataPath, 
             minRating=3.5)
-        frequent_itemsets = utils.algo_fpgrowth.fp_growth(transactions, min_support_percentage)
-        print("Frequent Itemsets:")
-        for itemset, support in sorted(frequent_itemsets.items(), key=lambda x: (-x[1], x[0])):
-            print(f"{itemset}: {support}")
-    
+        result =  utils.algo_fpgrowth.fp_growth(transactions,min_support_percentage =  self.minSupport)
+        dictionary = {}
+        for itemset, support in result.items():
+            length = len(itemset)
+            if length not in dictionary:
+                dictionary[length] = []
+            
+            dictionary[length].append({
+                'items': itemset,
+                'support': support
+            })
+        return dictionary
 
 def run_with_timer(func, name):
     start_time = time.time()
@@ -56,10 +58,13 @@ def run_with_timer(func, name):
     print(f"{name} execution time: {elapsed:.2f} seconds")
 
 if __name__ == "__main__":
-    worker = Worker(dataPath="ml-latest/cropped.csv", minSupport=0.1, minConfidence=0.5)
-    thread1 = threading.Thread(target=run_with_timer, args=(worker.runApioriAlgorithmWithRules, "Apriori"))
-    thread2 = threading.Thread(target=run_with_timer, args=(worker.runFPGrowthAlgorithm, "FP-Growth"))
-    thread1.start()
-    thread2.start()
-    thread1.join()
-    thread2.join()
+    worker = Worker(dataPath="movies_dataset/cropped.csv", minSupport=0.1, minConfidence=0.5)
+    # # thread1 = threading.Thread(target=run_with_timer, args=(worker.runApioriAlgorithmWithRules, "Apriori"))
+    # thread2 = threading.Thread(target=run_with_timer, args=(worker.runFPGrowthAlgorithm, "FP-Growth"))
+    # # thread1.start()
+    # thread2.start()
+    # # thread1.join()
+    # thread2.join()
+
+    worker.runFPGrowthAlgorithm()
+    

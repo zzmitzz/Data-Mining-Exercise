@@ -27,6 +27,25 @@ movies_dataset/keywords.csv
 movies_dataset/cropped.csv
 processed_movie/ratings.csv
 ./venv/
-./utils/__pycache__
-./utils/hybrid_recommend/__pycache__
+./utils/__pycache__/
+./utils/hybrid_recommend/__pycache__/
 ./utils/hybrid_recommend/similarity_matrix.npy
+venv/Lib/site-packages/__pycache__/
+utils/__pycache__/algo_apiori.cpython-311.pyc
+
+# Python virtual environment
+venv/
+env/
+ENV/
+.env/
+.venv/
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+utils/hybrid_recommend/similarity_matrix.npy
+utils/hybrid_recommend/cf_similarity.npy
