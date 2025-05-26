@@ -45,7 +45,11 @@ function MainApp() {
     setError("");
     try {
       if(datasetType === 'custom') {
-        const response = await fetch('http://localhost:8000/apriori/custom', {
+        let url = '';
+        if (algorithm === 'apriori') url = 'http://localhost:8000/apriori/custom';
+        else if (algorithm === 'apriori_hashtree') url = 'http://localhost:8000/apriori_hashtree/custom';
+        else url = 'http://localhost:8000/fpgrowth/custom';
+        const response = await fetch(url, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -75,6 +79,10 @@ function MainApp() {
         setRules(data.rules || []);
       }
       else if (datasetType === 'movielens') {
+        let url = '';
+        if (algorithm === 'apriori') url = `http://localhost:8000/apriori/default?min_support=${minSupport}&min_confidence=${minConfidence}`;
+        else if (algorithm === 'apriori_hashtree') url = `http://localhost:8000/apriori_hashtree/default?min_support=${minSupport}&min_confidence=${minConfidence}`;
+        else url = `http://localhost:8000/fpgrowth/default?min_support=${minSupport}&min_confidence=${minConfidence}`;
         const response = await fetch(`http://localhost:8000/${algorithm}/default?min_support=${minSupport}&min_confidence=${minConfidence}`, {
           method: 'GET',
         });
@@ -192,6 +200,16 @@ function MainApp() {
                   className="mr-2"
                 />
                 FP-Growth
+              </label>
+              <label className="radio-label">
+                <input
+                  type="radio"
+                  value="apriori_hashtree"
+                  checked={algorithm === 'apriori_hashtree'}
+                  onChange={() => setAlgorithm('apriori_hashtree')}
+                  className="mr-2"
+                />
+                Apriori Hash Tree
               </label>
             </div>
           </div>
@@ -322,6 +340,20 @@ function MainApp() {
                     <li>Prune candidates with infrequent subsets</li>
                     <li>Count support for remaining candidates</li>
                     <li>Repeat until no more frequent itemsets are found</li>
+                  </ol>
+                </div>
+              ) : algorithm === 'apriori_hashtree' ? (
+                <div>
+                  <p className="mb-3">
+                    <strong>Apriori Hash Tree Algorithm:</strong> An optimized version of Apriori that uses a hash tree to efficiently store and count candidate itemsets.
+                  </p>
+                  <ol className="explanation-list">
+                    <li>Find all frequent 1-itemsets</li>
+                    <li>Generate candidate k-itemsets from frequent (k-1)-itemsets (Apriori join & prune)</li>
+                    <li>Insert candidates into a hash tree structure</li>
+                    <li>Traverse transactions and update support counts in the hash tree</li>
+                    <li>Extract frequent itemsets from the hash tree</li>
+                    <li>Repeat for increasing k until no more frequent itemsets are found</li>
                   </ol>
                 </div>
               ) : (

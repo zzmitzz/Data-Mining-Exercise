@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import nltk
 import re
 from nltk.corpus import stopwords
-from content_base import ContentBasedRecommender
+from utils.hybrid_recommend.content_base import ContentBasedRecommender
 from tqdm import tqdm
 
 

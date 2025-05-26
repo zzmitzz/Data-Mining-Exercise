@@ -1,5 +1,6 @@
 
 import utils
+import itertools
 
 
 class Node:
@@ -231,3 +232,32 @@ def fp_growth(transactions, min_support_percentage):
     
     return result
 
+def generate_association_rules_from_fp(frequent_itemsets, min_confidence):
+    """
+    Generate association rules from frequent itemsets (FP-Growth style).
+    frequent_itemsets: dict {itemset(tuple): support(float)}
+    """
+    rules = []
+    for itemset in frequent_itemsets:
+        if len(itemset) < 2:
+            continue
+        itemset_support = frequent_itemsets[itemset]
+        itemset_set = set(itemset)
+        for i in range(1, len(itemset)):
+            for antecedent in itertools.combinations(itemset, i):
+                antecedent = tuple(sorted(antecedent))
+                consequent_set = itemset_set - set(antecedent)
+                consequent = tuple(sorted(consequent_set))
+                if len(consequent) == 0:
+                    continue
+                antecedent_support = frequent_itemsets.get(antecedent, 0)
+                if antecedent_support > 0:
+                    confidence = itemset_support / antecedent_support
+                    if confidence >= min_confidence:
+                        rules.append({
+                            "antecedent": antecedent,
+                            "consequent": consequent,
+                            "support": itemset_support,
+                            "confidence": confidence,
+                        })
+    return rules
