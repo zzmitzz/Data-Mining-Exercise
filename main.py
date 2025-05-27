@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
 from utils.algo_apiori import findApiroriWithRules, findFrequentItemSet, generateAssociationRules
+from utils.algo_fpgrowth import fp_growth, generate_association_rules_from_fp
 import uvicorn
 import time
 import worker
@@ -13,6 +14,8 @@ from concurrent.futures import ThreadPoolExecutor
 import threading
 import asyncio
 import numpy as np
+from utils.apriori_hashtree import apriori_hash_tree
+
 app = FastAPI()
 origins = [
     "http://localhost:5173",
@@ -114,6 +117,60 @@ async def run_apriori_default(
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+@app.post("/apriori_hashtree/custom")
+async def run_apriori_hashtree_custom(dataset: CustomDataset):
+    start_time = time.time()
+    try:
+        transactions = dataset.data
+        minsup = dataset.min_support
+        minconf = dataset.min_confidence
+        freq_itemsets, rules = apriori_hash_tree(transactions, minsup, minconf)
+        # Chuyển đổi kết quả cho frontend
+        transformed_itemsets = {}
+        for itemset, support in freq_itemsets.items():
+            size = len(itemset)
+            if size not in transformed_itemsets:
+                transformed_itemsets[size] = []
+            transformed_itemsets[size].append({
+                "items": list(itemset),
+                "support": support
+            })
+        return {
+            "frequent_itemsets": transformed_itemsets,
+            "rules": rules,
+            "time": time.time() - start_time
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    
+@app.get("/apriori_hashtree/default")
+async def run_apriori_hashtree_default(
+    min_support: Optional[float] = 0.2,
+    min_confidence: Optional[float] = 0.5
+):
+    import pandas as pd
+    start_time = time.time()
+    try:
+        ratings = pd.read_csv("movies_dataset/cropped.csv")
+        transactions = ratings.groupby("userId")["movieId"].apply(list).tolist()
+        freq_itemsets, rules = apriori_hash_tree(transactions, min_support, min_confidence)
+        transformed_itemsets = {}
+        for itemset, support in freq_itemsets.items():
+            size = len(itemset)
+            if size not in transformed_itemsets:
+                transformed_itemsets[size] = []
+            transformed_itemsets[size].append({
+                "items": list(itemset),
+                "support": support
+            })
+        return {
+            "frequent_itemsets": transformed_itemsets,
+            "rules": rules,
+            "time": time.time() - start_time
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
 @app.get("/fpgrowth/default")
 async def run_fpgrowth_default(
     min_support: Optional[float] = 0.1,
@@ -137,17 +194,27 @@ async def run_fpgrowth_default(
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@app.get("/fpgrowth/custom")
-async def run_fpgrowth_custom(
-    dataset: CustomDataset,
-    min_support_percentage: Optional[float] = 0.1
-):
-    mining = worker.Worker(dataPath="movies_dataset/cropped.csv", minSupport=min_support_percentage, minConfidence=0.3)
+@app.post("/fpgrowth/custom")
+async def run_fpgrowth_custom(dataset: CustomDataset):
     start_time = time.time()
     try:
-        freq_itemsets = mining.runFPGrowthAlgorithm()
+        transactions = dataset.data
+        min_support = dataset.min_support
+        min_confidence = dataset.min_confidence
+        result = fp_growth(transactions, min_support)
+        rules = generate_association_rules_from_fp(result, min_confidence)
+        freq_itemsets = {}
+        for itemset, support in result.items():
+            size = len(itemset)
+            if size not in freq_itemsets:
+                freq_itemsets[size] = []
+            freq_itemsets[size].append({
+                "items": list(itemset),
+                "support": support
+            })
         return {
             "frequent_itemsets": freq_itemsets,
+            "rules": rules,
             "time": time.time() - start_time
         }
     except Exception as e:
