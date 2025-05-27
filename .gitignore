@@ -49,3 +49,12 @@ __pycache__/
 htmlcov/
 utils/hybrid_recommend/similarity_matrix.npy
 utils/hybrid_recommend/cf_similarity.npy
+processed_movie/rating_smalls.csv
+processed_movie/processed_ratings.csv
+processed_movie/processed_movies.csv
+movies_dataset/movies_with_keywords.csv
+predictions.txt
+utils/hybrid_recommend/weight/cf-user-user-similarity.npy
+utils/hybrid_recommend/weight/keyword_similarity_matrix.npy
+utils/hybrid_recommend/weight/overview_similarity_matrix.npy
+utils/hybrid_recommend/weight/similar_item_item_matrix.npy
