@@ -63,11 +63,41 @@ def combine_recommendations(cf_recommendations, cb_recommendations, cf_weight=0.
 
 ratings_df = pd.read_csv(r'C:\Users\Admin\Documents\Last semester\Data Mining Exercise\movies_dataset\ratings_small.csv')
 movies_df = pd.read_csv(r'C:\Users\Admin\Documents\Last semester\Data Mining Exercise\movies_dataset\movies_with_keywords.csv')
-userId = 1
-similarity_matrix = np.load(r"C:\Users\Admin\Documents\Last semester\Data Mining Exercise\utils\hybrid_recommend\weight\similar_item_item_matrix.npy")
-cf = CollaborativeFiltering(n_neighbors=5, movies_df=movies_df, ratings_df=ratings_df)
-cb = ContentBasedRecommender(movies_df=movies_df, ratings_df=ratings_df)
-recommendations, top_recommendations = cf.recommend_items(userId, n_recommendations=5)
-cb_recommendations, cb_top_recommendations = cb.recommend_items(userId, similarity_matrix=similarity_matrix)
-# Combine recommendations from both methods
-combined_recommendations = combine_recommendations(cf_recommendations=recommendations, cb_recommendations=cb_recommendations, cf_weight=0.5, cb_weight=0.5)
+# userId = 1
+# similarity_matrix = np.load(r"C:\Users\Admin\Documents\Last semester\Data Mining Exercise\utils\hybrid_recommend\weight\similar_item_item_matrix.npy")
+# cf = CollaborativeFiltering(n_neighbors=5, movies_df=movies_df, ratings_df=ratings_df)
+# cb = ContentBasedRecommender(movies_df=movies_df, ratings_df=ratings_df)
+# recommendations, top_recommendations = cf.recommend_items(userId, n_recommendations=5)
+# cb_recommendations, cb_top_recommendations = cb.recommend_items(userId, similarity_matrix=similarity_matrix)
+# # Combine recommendations from both methods
+# combined_recommendations = combine_recommendations(cf_recommendations=recommendations, cb_recommendations=cb_recommendations, cf_weight=0.5, cb_weight=0.5)
+
+def create_user_item_matrix(ratings_df):
+    """
+    Create a user-item matrix from ratings dataframe.
+    
+    Args:
+        ratings_df: DataFrame containing columns 'userId', 'movieId', and 'rating'
+        
+    Returns:
+        user_item_matrix: DataFrame with users as rows and movies as columns
+    """
+    # Create pivot table
+    user_item_matrix = ratings_df.pivot(
+        index='userId',
+        columns='movieId',
+        values='rating'
+    )
+    
+    # Fill NaN values with 0 (indicating no rating)
+    user_item_matrix = user_item_matrix.fillna(0)
+    
+    return user_item_matrix
+
+# Example usage:
+# user_item_matrix = create_user_item_matrix(ratings_df)
+# print("User-Item Matrix Shape:", user_item_matrix.shape)
+# print("\nFirst few rows of the matrix:")
+# print(user_item_matrix.head())
+
+print(create_user_item_matrix(ratings_df))
